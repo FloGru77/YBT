@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balancetest Calculator</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#f5f0e5">
+    <meta name="description" content="Ein Calculator für dynamische Gleichgewichtstests">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(to right, #f5f0e5, #f8e1e5);
+            color: #000;
+        }
+        h1 {
+            color: #000;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #000;
+            text-align: center;
+            font-weight: 500;
+            margin: 30px 0 15px 0;
+            font-size: 1.6rem;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 8px;
+        }
+        h3 {
+            color: #000;
+            font-weight: 500;
+            margin: 20px 0 10px 0;
+            font-size: 1.3rem;
+            border-left: 4px solid rgba(0, 0, 0, 0.1);
+            padding-left: 10px;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #000;
+        }
+        input[type="number"], input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: white;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        
+        .therapist-select {
+            cursor: pointer;
+        }
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 600px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .leg-section {
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            border-left: 4px solid #ccc;
+        }
+        .result-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #000;
+        }
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        button {
+            background-color: #eee;
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #ddd;
+        }
+        .btn-primary {
+            background-color: #d48a9f;
+            color: white;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            background-color: #c17a8f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 8px rgba(0, 0, 0, 0.15);
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .comparison-table th {
+            background-color: #f5f5f5;
+        }
+        .comparison-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            flex: 1;
+            background-color: #eee;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #000;
+        }
+        .tab-button.active {
+            background-color: #ddd;
+            color: #000;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .ytest-diagram {
+            display: block;
+            margin: 30px auto;
+            max-width: 300px;
+        }
+        .reference {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .alert {
+            background-color: #fef9e7;
+            border-left: 4px solid #f1c40f;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .risk-indicator {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .risk-low {
+            background-color: #e5f7e5;
+            color: #2a8d2a;
+        }
+        .risk-moderate {
+            background-color: #fef9e7;
+            color: #b7790d;
+        }
+        .risk-high {
+            background-color: #fdedeb;
+            color: #c0392b;
+        }
+        .asymmetry-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .asymmetry-table th, .asymmetry-table td {
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .lsi-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .lsi-value {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .logo {
+            width: 160px;
+            height: auto;
+        }
+        .title-container {
+            text-align: center;
+            flex-grow: 1;
+        }
+        .patient-info {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            width: 180px;
+        }
+        @media (max-width: 767px) {
+            .header {
+                flex-direction: column;
+            }
+            .patient-info, .title-container, .contact-info {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 15px;
+            }
+        }
+        .contact-info {
+            text-align: right;
+            font-size: 0.8em;
+            line-height: 1.2;
+            width: 180px;
+        }
+        .contact-info p {
+            margin: 0;
+        }
+        .contact-info a {
+            color: #000;
+            text-decoration: none;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        #info h3, #research h3 {
+            color: #000;
+            font-weight: bold;
+        }
+        .subtitle {
+            margin-top: -10px;
+            font-size: 1.1rem;
+            color: #555;
+            text-align: center;
+        }
+        
+        /* PWA-specific styles */
+        .install-banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px;
+            background-color: #f8f9fa;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+        .install-banner button {
+            display: inline-block;
+            width: auto;
+            margin: 0 10px;
+        }
+        /* Offline indicator */
+        .offline-indicator {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-radius: 4px;
+            z-index: 1001;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Offline indicator -->
+    <div class="offline-indicator" id="offline-indicator">
+        Du bist offline. Die App funktioniert weiterhin.
+    </div>
+    
+    <!-- Install banner -->
+    <div class="install-banner" id="install-banner">
+        Diese App kann auf deinem Homescreen installiert werden
+        <button id="install-btn" class="btn-primary">Installieren</button>
+        <button id="dismiss-install-btn">Nicht jetzt</button>
+    </div>
+
+    <div class="header">
+        <div class="patient-info">
+            <div class="form-group">
+                <label for="patient">Patient:</label>
+                <input type="text" id="patient">
+            </div>
+            <div class="form-group">
+                <label for="therapist">Therapeut:</label>
+                <select id="therapist" class="therapist-select">
+                    <option value="">Bitte auswählen...</option>
+                    <option value="Custom">Eigener Eintrag...</option>
+                </select>
+                <input type="text" id="custom-therapist" style="display:none; margin-top:5px;" placeholder="Namen eingeben">
+            </div>
+            <div class="form-group">
+                <label for="date">Datum:</label>
+                <input type="date" id="date">
+            </div>
+        </div>
+        
+        <div class="title-container">
+            <h1>Balancetest Calculator</h1>
+            <p class="subtitle">Dynamisches Gleichgewicht Assessment Tool</p>
+        </div>
+        
+        <div class="contact-info" id="contact-info">
+            <!-- Diese Sektion kann angepasst oder leer gelassen werden -->
+        </div>
+    </div>
+    
+    <div class="tab-buttons">
+        <button class="tab-button active" id="calculator-tab">Calculator</button>
+        <button class="tab-button" id="info-tab">Test Information</button>
+        <button class="tab-button" id="research-tab">Forschung & Normwerte</button>
+    </div>
+    
+    <div id="calculator" class="tab-content active">
+        <div class="container">
+            <div class="form-group">
+                <label for="right-limb-length">Rechte Beinlänge (cm):</label>
+                <input type="number" id="right-limb-length" step="0.1" min="0" placeholder="Rechte Beinlänge in cm eingeben">
+            </div>
+            
+            <div class="form-group">
+                <label for="left-limb-length">Linke Beinlänge (cm):</label>
+                <input type="number" id="left-limb-length" step="0.1" min="0" placeholder="Linke Beinlänge in cm eingeben">
+            </div>
+            
+            <div class="leg-section">
+                <h2>Rechtes Bein (Standbein)</h2>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label for="right-anterior">Anterior (cm):</label>
+                        <input type="number" id="right-anterior" step="0.1" min="0" placeholder="Anterior">
+                    </div>
+                    <div class="form-group">
+                        <label for="right-posteromedial">Posteromedial (cm):</label>
+                        <input type="number" id="right-posteromedial" step="0.1" min="0" placeholder="Posteromedial">
+                    </div>
+                    <div class="form-group">
+                        <label for="right-posterolateral">Posterolateral (cm):</label>
+                        <input type="number" id="right-posterolateral" step="0.1" min="0" placeholder="Posterolateral">
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <h3>Rechtes Bein Composite Score:</h3>
+                    <div id="right-composite-percent" class="result-value">-</div>
+                </div>
+            </div>
+            
+            <div class="leg-section">
+                <h2>Linkes Bein (Standbein)</h2>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label for="left-anterior">Anterior (cm):</label>
+                        <input type="number" id="left-anterior" step="0.1" min="0" placeholder="Anterior">
+                    </div>
+                    <div class="form-group">
+                        <label for="left-posteromedial">Posteromedial (cm):</label>
+                        <input type="number" id="left-posteromedial" step="0.1" min="0" placeholder="Posteromedial">
+                    </div>
+                    <div class="form-group">
+                        <label for="left-posterolateral">Posterolateral (cm):</label>
+                        <input type="number" id="left-posterolateral" step="0.1" min="0" placeholder="Posterolateral">
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <h3>Linkes Bein Composite Score:</h3>
+                    <div id="left-composite-percent" class="result-value">-</div>
+                </div>
+            </div>
+            
+            <button id="calculate-btn" class="btn-primary">Scores berechnen</button>
+            
+            <div class="results" style="margin-top: 30px;">
+                <h3>Asymmetrie-Bewertung:</h3>
+                <div id="asymmetry-container">
+                    <div id="asymmetry-composite" class="result-value">-</div>
+                    <div id="anterior-asymmetry">-</div>
+                    <div id="posteromedial-asymmetry">-</div>
+                    <div id="posterolateral-asymmetry">-</div>
+                </div>
+            </div>
+            
+            <div class="lsi-section">
+                <h3>Limb Symmetry Index (LSI)</h3>
+                <p>Der LSI misst die Symmetrie zwischen den Gliedmaßen als Prozentsatz:</p>
+                <div id="lsi-container">
+                    <div id="lsi-composite" class="lsi-value">-</div>
+                    <div id="lsi-interpretation">-</div>
+                </div>
+                <p><small>LSI = (Niedriger bewertete Gliedmaße / Höher bewertete Gliedmaße) × 100%</small></p>
+            </div>
+            
+            <button id="save-data-btn" class="btn-primary" style="margin-top: 30px;">Daten speichern</button>
+            <button id="load-data-btn" style="margin-top: 10px;">Gespeicherte Daten laden</button>
+            <button id="export-pdf-btn" style="margin-top: 10px;">Als PDF exportieren (Kommt bald)</button>
+        </div>
+    </div>
+    
+    <div id="info" class="tab-content">
+        <div class="container">
+            <h2>Dynamic Balance Test Information</h2>
+            <p>Der Dynamic Balance Test ist ein funktioneller Test, der die Haltungskontrolle während des Einbeinstands mit Reichbewegungen misst. Er basiert auf dem Star Excursion Balance Test (SEBT), um die Zuverlässigkeit und Standardisierung zu verbessern.</p>
+            
+            <h3>Zweck</h3>
+            <p>Der Test bewertet das dynamische Gleichgewicht, die neuromuskuläre Kontrolle und die Mobilität. Er wird verwendet für:</p>
+            <ul>
+                <li>Screening des Verletzungsrisikos</li>
+                <li>Return-to-Sport-Entscheidungen</li>
+                <li>Beurteilung funktioneller Defizite im Zusammenhang mit Erkrankungen der unteren Extremitäten</li>
+                <li>Überwachung des Fortschritts während der Rehabilitation</li>
+            </ul>
+            
+            <h3>Testrichtungen</h3>
+            <p>Der Test besteht aus drei Reichweiterichtungen, die eine "Y"-Form bilden:</p>
+            
+            <svg class="ytest-diagram" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background -->
+                <circle cx="150" cy="150" r="140" fill="#f9f9f9" stroke="#333" stroke-width="2"/>
+                
+                <!-- Y Directions - just simple lines, no arrows -->
+                <line x1="150" y1="150" x2="150" y2="30" stroke="#333" stroke-width="4"/>
+                <line x1="150" y1="150" x2="250" y2="250" stroke="#333" stroke-width="4"/>
+                <line x1="150" y1="150" x2="50" y2="250" stroke="#333" stroke-width="4"/>
+                
+                <!-- Center with Stance Leg R label -->
+                <circle cx="150" cy="150" r="25" fill="#333"/>
+                <text x="150" y="147" text-anchor="middle" font-size="11" fill="white">Stand-</text>
+                <text x="150" y="160" text-anchor="middle" font-size="11" fill="white">Bein R</text>
+                
+                <!-- Enhanced Labels with solid background for better visibility -->
+                <rect x="120" y="5" width="60" height="25" fill="white" stroke="#333" stroke-width="1" rx="4"/>
+                <text x="150" y="23" text-anchor="middle" font-weight="bold" font-size="14" fill="#000">Anterior</text>
+                
+                <!-- SWAPPED: Right side now shows Posteromedial -->
+                <rect x="200" y="250" width="90" height="20" fill="white" stroke="#333" stroke-width="1" rx="0"/>
+                <text x="245" y="265" text-anchor="middle" font-weight="bold" font-size="12" fill="#000">Posteromedial</text>
+                
+                <!-- SWAPPED: Left side now shows Posterolateral -->
+                <rect x="10" y="250" width="90" height="20" fill="white" stroke="#333" stroke-width="1" rx="0"/>
+                <text x="55" y="265" text-anchor="middle" font-weight="bold" font-size="12" fill="#000">Posterolateral</text>
+            </svg>
+            
+            <h3>Testprotokoll</h3>
+            <ol>
+                <li><strong>Messung der Gliedmaßenlänge:</strong> Messen Sie von der vorderen oberen Darmbeinspitze (ASIS) bis zum distalen Aspekt des Innenknöchels, während der Proband in Rückenlage liegt. Messen Sie jedes Bein separat und verwenden Sie die spezifische Gliedmaßenlänge zur Normalisierung der Reichweitenabstände jedes Beins.</li>
+                <li><strong>Übungsdurchläufe:</strong> Vor dem formellen Test 6 Übungsdurchläufe in jede Richtung für jeden Fuß durchführen.</li>
+                <li><strong>Testreihenfolge:</strong> Befolgen Sie eine Standardreihenfolge: rechts anterior, links anterior, rechts posteromedial, links posteromedial, rechts posterolateral, links posterolateral.</li>
+                <li><strong>Fußposition:</strong> Platzieren Sie den Standfuß mit dem distalsten Teil der Zehen in der Mitte des Rasters.</li>
+                <li><strong>Ausführung:</strong> Während Sie das Gleichgewicht auf dem Standbein halten, reichen Sie mit dem Nicht-Standbein so weit wie möglich in die angegebene Richtung.</li>
+                <li><strong>Messung:</strong> Zeichnen Sie die weiteste Reichweite auf, die in jede Richtung erreicht wurde.</li>
+                <li><strong>Wichtig:</strong> Der Test muss an beiden Beinen durchgeführt werden, um Asymmetrien zu bewerten, die ein wichtiger Risikofaktor für Verletzungen sind.</li>
+            </ol>
+            
+            <h3>Ungültige Versuche</h3>
+            <p>Ein Versuch gilt als ungültig, wenn der Teilnehmer:</p>
+            <ul>
+                <li>Den Einbeinstand nicht aufrechterhalten kann</li>
+                <li>Den Standfuß anhebt oder bewegt</li>
+                <li>Mit dem Reichfuß aufsetzt, um Halt zu gewinnen</li>
+                <li>Den Reichfuß nicht kontrolliert in die Ausgangsposition zurückbringt</li>
+            </ul>
+            
+            <h3>Berechnung des Composite Scores</h3>
+            <p>Der Composite Score wird für jede Gliedmaße separat berechnet:</p>
+            <p><strong>Formel:</strong> Composite Score = (Anterior + Posteromedial + Posterolateral) / (3 × Gliedmaßenlänge) × 100</p>
+        </div>
+    </div>
+    
+    <div id="research" class="tab-content">
+        <div class="container">
+            <h2>Forschungsergebnisse & Normwerte</h2>
+            
+            <h3>Verletzungsrisiko & Leistung</h3>
+            <p>Die Forschung hat mehrere wichtige Schwellenwerte identifiziert, die mit einem erhöhten Verletzungsrisiko verbunden sind:</p>
+            
+            <div class="alert">
+                <p><strong>Wichtige Risikofaktoren:</strong></p>
+                <ul>
+                    <li>Anterior-Reichweiten-Asymmetrie ≥4 cm zwischen den Gliedmaßen (2,5-fach erhöhtes Risiko)</li>
+                    <li>Weibliche Athleten mit einem Composite Score <94% der Gliedmaßenlänge (6,5-fach erhöhtes Risiko)</li>
+                    <li>Männliche College-Football-Spieler mit einem Composite Score <89,6% (3,5-fach erhöhtes Risiko)</li>
+                    <li>Limb Symmetry Index (LSI) <94% (signifikante Asymmetrie, die auf ein potenzielles Risiko hindeutet)</li>
+                </ul>
+            </div>
+            
+            <h3>Limb Symmetry Index (LSI)</h3>
+            <p>Der LSI ist eine wichtige Messgröße in der Rehabilitation und Verletzungsprävention:</p>
+            <ul>
+                <li>LSI = (Niedriger bewertete Gliedmaße / Höher bewertete Gliedmaße) × 100%</li>
+                <li>Werte unter 94% weisen auf klinisch relevante Asymmetrien hin</li>
+                <li>Wird oft bei der Entscheidungsfindung für die Rückkehr zum Sport nach einer Verletzung verwendet</li>
+                <li>Werte unter 90% weisen im Allgemeinen auf signifikante funktionelle Defizite hin</li>
+            </ul>
+            
+            <h3>Populationsspezifische Normwerte für den Composite Score</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>Population</th>
+                    <th>Durchschnittlicher Composite Score</th>
+                    <th>Risikoschwelle</th>
+                </tr>
+                <tr>
+                    <td>High School Basketball Spielerinnen</td>
+                    <td>98,4%</td>
+                    <td><94,0%</td>
+                </tr>
+                <tr>
+                    <td>High School Basketball Spieler</td>
+                    <td>103,0%</td>
+                    <td>Nicht festgelegt</td>
+                </tr>
+                <tr>
+                    <td>College Football Spieler</td>
+                    <td>~95-100%</td>
+                    <td><89,6%</td>
+                </tr>
+                <tr>
+                    <td>Ältere Erwachsene (60+ Jahre)</td>
+                    <td>~85-95%</td>
+                    <td>Nicht festgelegt</td>
+                </tr>
+            </table>
+            
+            <h3>Zuverlässigkeit des Tests</h3>
+            <p>Der Test hat über verschiedene Populationen hinweg eine hervorragende Zuverlässigkeit gezeigt:</p>
+            <ul>
+                <li><strong>Intrarater-Reliabilität:</strong> 0,85-0,91 (ICC)</li>
+                <li><strong>Interrater-Reliabilität:</strong> 0,99-1,00 (ICC)</li>
+                <li><strong>Test-Retest-Reliabilität bei älteren Erwachsenen:</strong> 0,95 (ICC)</li>
+            </ul>
+            
+            <h3>Beziehung zu anderen Gleichgewichtsmaßnahmen</h3>
+            <p>Der Test korreliert signifikant mit anderen funktionellen Maßnahmen bei älteren Erwachsenen:</p>
+            <ul>
+                <li>Timed Up and Go (r = -0,52)</li>
+                <li>8-foot Up and Go (r = -0,72)</li>
+                <li>30-second Chair Stand Test (r = 0,65)</li>
+                <li>Activities-specific Balance Confidence Scale (r = 0,54)</li>
+                <li>Single Leg Stance (r = 0,50)</li>
+            </ul>
+            
+            <h3>Klinische Anwendungen</h3>
+            <p>Der Test kann effektiv eingesetzt werden, um:</p>
+            <ul>
+                <li>Athleten mit erhöhtem Risiko für Verletzungen der unteren Extremitäten zu identifizieren</li>
+                <li>Dynamische Gleichgewichtsdefizite bei Patienten mit verschiedenen Erkrankungen der unteren Extremitäten zu erkennen</li>
+                <li>Die Wirksamkeit von Gleichgewichts- und neuromuskulären Trainingsprogrammen zu bewerten</li>
+                <li>Das Gleichgewicht bei älteren Erwachsenen mit guter bis ausgezeichneter Validität und Zuverlässigkeit zu bewerten</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Wait for the DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Add event listeners to each tab button
+            document.getElementById('calculator-tab').addEventListener('click', function() {
+                activateTab('calculator');
+            });
+            
+            document.getElementById('info-tab').addEventListener('click', function() {
+                activateTab('info');
+            });
+            
+            document.getElementById('research-tab').addEventListener('click', function() {
+                activateTab('research');
+            });
+            
+            // Function to activate the selected tab
+            function activateTab(tabId) {
+                // Hide all tab contents
+                tabContents.forEach(function(content) {
+                    content.classList.remove('active');
+                });
+                
+                // Deactivate all tab buttons
+                tabButtons.forEach(function(button) {
+                    button.classList.remove('active');
+                });
+                
+                // Show selected tab content
+                document.getElementById(tabId).classList.add('active');
+                
+                // Highlight the active tab button
+                document.getElementById(tabId + '-tab').classList.add('active');
+            }
+            
+            // Calculate button functionality
+            document.getElementById('calculate-btn').addEventListener('click', calculateCompositeScore);
+            
+            // Custom therapist input functionality
+            document.getElementById('therapist').addEventListener('change', function() {
+                if (this.value === 'Custom') {
+                    document.getElementById('custom-therapist').style.display = 'block';
+                } else {
+                    document.getElementById('custom-therapist').style.display = 'none';
+                }
+            });
+            
+            // Current date in the date field
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            document.getElementById('date').value = yyyy + '-' + mm + '-' + dd;
+            
+            // Save data functionality
+            document.getElementById('save-data-btn').addEventListener('click', saveData);
+            
+            // Load data functionality
+            document.getElementById('load-data-btn').addEventListener('click', loadData);
+            
+            // Register service worker for PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js')
+                .then(function(registration) {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('Service Worker registration failed:', error);
+                });
+            }
+            
+            // Check for install prompt
+            let deferredPrompt;
+            const installBanner = document.getElementById('install-banner');
+            const installBtn = document.getElementById('install-btn');
+            const dismissBtn = document.getElementById('dismiss-install-btn');
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome 67 and earlier from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Show the install banner
+                installBanner.style.display = 'block';
+            });
+            
+            installBtn.addEventListener('click', (e) => {
+                // Hide the app provided install promotion
+                installBanner.style.display = 'none';
+                // Show the install prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+            
+            dismissBtn.addEventListener('click', (e) => {
+                installBanner.style.display = 'none';
+            });
+            
+            // Offline detection
+            const offlineIndicator = document.getElementById('offline-indicator');
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineIndicator.style.display = 'none';
+                } else {
+                    offlineIndicator.style.display = 'block';
+                }
+            }
+            
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus(); // Initial check
+        });
+
+        function calculateCompositeScore() {
+            // Get limb lengths
+            let rightLimbLength = parseFloat(document.getElementById('right-limb-length').value);
+            let leftLimbLength = parseFloat(document.getElementById('left-limb-length').value);
+            
+            if (!rightLimbLength || rightLimbLength <= 0 || !leftLimbLength || leftLimbLength <= 0) {
+                alert('Bitte gib gültige Beinlängen für beide Beine ein.');
+                return;
+            }
+            
+            // Values for right leg
+            let rightAnterior = parseFloat(document.getElementById('right-anterior').value) || 0;
+            let rightPosteromedial = parseFloat(document.getElementById('right-posteromedial').value) || 0;
+            let rightPosterolateral = parseFloat(document.getElementById('right-posterolateral').value) || 0;
+            
+            // Values for left leg
+            let leftAnterior = parseFloat(document.getElementById('left-anterior').value) || 0;
+            let leftPosteromedial = parseFloat(document.getElementById('left-posteromedial').value) || 0;
+            let leftPosterolateral = parseFloat(document.getElementById('left-posterolateral').value) || 0;
+            
+            // Calculate composite score for right leg
+            let rightSum = rightAnterior + rightPosteromedial + rightPosterolateral;
+            let rightComposite = (rightSum / (3 * rightLimbLength)) * 100;
+            
+            // Calculate composite score for left leg
+            let leftSum = leftAnterior + leftPosteromedial + leftPosterolateral;
+            let leftComposite = (leftSum / (3 * leftLimbLength)) * 100;
+            
+            // Display results
+            document.getElementById('right-composite-percent').textContent = 
+                rightComposite.toFixed(2) + '%';
+            document.getElementById('left-composite-percent').textContent = 
+                leftComposite.toFixed(2) + '%';
+                
+            // Calculate asymmetries
+            let compositeAsymmetry = Math.abs(rightComposite - leftComposite);
+            let anteriorAsymmetry = Math.abs(rightAnterior - leftAnterior);
+            let posteromedialAsymmetry = Math.abs(rightPosteromedial - leftPosteromedial);
+            let posterolateralAsymmetry = Math.abs(rightPosterolateral - leftPosterolateral);
+            
+            // Display asymmetry results
+            let asymmetryHTML = '<table class="asymmetry-table">' +
+                                '<tr><th>Richtung</th><th>Asymmetrie</th><th>Risikobewertung</th></tr>';
+            
+            // Composite asymmetry
+            asymmetryHTML += '<tr><td><strong>Composite</strong></td><td>' + 
+                            compositeAsymmetry.toFixed(2) + '%</td><td>' + 
+                            getAsymmetryRisk(compositeAsymmetry, 'composite') + '</td></tr>';
+            
+            // Anterior asymmetry (in cm)
+            asymmetryHTML += '<tr><td>Anterior</td><td>' + 
+                            anteriorAsymmetry.toFixed(2) + ' cm</td><td>' + 
+                            getAsymmetryRisk(anteriorAsymmetry, 'anterior') + '</td></tr>';
+            
+            // Posteromedial asymmetry
+            asymmetryHTML += '<tr><td>Posteromedial</td><td>' + 
+                            posteromedialAsymmetry.toFixed(2) + ' cm</td><td>' + 
+                            getAsymmetryRisk(posteromedialAsymmetry, 'other') + '</td></tr>';
+            
+            // Posterolateral asymmetry
+            asymmetryHTML += '<tr><td>Posterolateral</td><td>' + 
+                            posterolateralAsymmetry.toFixed(2) + ' cm</td><td>' + 
+                            getAsymmetryRisk(posterolateralAsymmetry, 'other') + '</td></tr>';
+            
+            asymmetryHTML += '</table>';
+            
+            document.getElementById('asymmetry-container').innerHTML = asymmetryHTML;
+            
+            // Calculate Limb Symmetry Index (LSI)
+            let lowerComposite = Math.min(rightComposite, leftComposite);
+            let higherComposite = Math.max(rightComposite, leftComposite);
+            let lsi = (lowerComposite / higherComposite) * 100;
+            
+            // Display LSI results
+            let lsiHTML = '<div class="lsi-value">' + lsi.toFixed(2) + '%</div>';
+            lsiHTML += '<div>' + getLsiInterpretation(lsi) + '</div>';
+            
+            document.getElementById('lsi-container').innerHTML = lsiHTML;
+        }
+        
+        function getLsiInterpretation(lsi) {
+            if (lsi >= 94) {
+                return '<span class="risk-indicator risk-low">Exzellente Symmetrie (Niedriges Risiko)</span>';
+            } else if (lsi >= 90) {
+                return '<span class="risk-indicator risk-moderate">Gute Symmetrie (Mittleres Risiko)</span>';
+            } else {
+                return '<span class="risk-indicator risk-high">Schlechte Symmetrie (Hohes Risiko)</span> - Signifikantes funktionelles Defizit erkannt';
+            }
+        }
+        
+        function getAsymmetryRisk(value, type) {
+            if (type === 'anterior') {
+                // Anterior research shows ≥4cm is high risk
+                if (value >= 4.0) {
+                    return '<span class="risk-indicator risk-high">Hohes Risiko (2,5× erhöht)</span>';
+                } else if (value >= 2.0) {
+                    return '<span class="risk-indicator risk-moderate">Mittleres Risiko</span>';
+                } else {
+                    return '<span class="risk-indicator risk-low">Niedriges Risiko</span>';
+                }
+            } else if (type === 'composite') {
+                if (value > 4.0) {
+                    return '<span class="risk-indicator risk-high">Hohes Risiko</span>';
+                } else if (value > 2.0) {
+                    return '<span class="risk-indicator risk-moderate">Mittleres Risiko</span>';
+                } else {
+                    return '<span class="risk-indicator risk-low">Niedriges Risiko</span>';
+                }
+            } else {
+                // Other directions
+                if (value > 6.0) {
+                    return '<span class="risk-indicator risk-high">Hohes Risiko</span>';
+                } else if (value > 4.0) {
+                    return '<span class="risk-indicator risk-moderate">Mittleres Risiko</span>';
+                } else {
+                    return '<span class="risk-indicator risk-low">Niedriges Risiko</span>';
+                }
+            }
+        }
+        
+        // Save test data to localStorage
+        function saveData() {
+            const patient = document.getElementById('patient').value;
+            let therapist = document.getElementById('therapist').value;
+            
+            // Handle custom therapist
+            if (therapist === 'Custom') {
+                therapist = document.getElementById('custom-therapist').value;
+            }
+            
+            const testData = {
+                patient: patient,
+                therapist: therapist,
+                date: document.getElementById('date').value,
+                rightLimbLength: document.getElementById('right-limb-length').value,
+                leftLimbLength: document.getElementById('left-limb-length').value,
+                rightAnterior: document.getElementById('right-anterior').value,
+                rightPosteromedial: document.getElementById('right-posteromedial').value,
+                rightPosterolateral: document.getElementById('right-posterolateral').value,
+                leftAnterior: document.getElementById('left-anterior').value,
+                leftPosteromedial: document.getElementById('left-posteromedial').value,
+                leftPosterolateral: document.getElementById('left-posterolateral').value,
+                timestamp: new Date().getTime()
+            };
+            
+            // Create a key based on patient name and date
+            const key = `ybt_${patient}_${new Date().getTime()}`;
+            
+            // Get existing saved tests
+            let savedTests = JSON.parse(localStorage.getItem('ybt_saved_tests') || '[]');
+            
+            // Add this test to the list
+            savedTests.push({
+                key: key,
+                patient: patient,
+                date: document.getElementById('date').value,
+                timestamp: new Date().getTime()
+            });
+            
+            // Save the test data and the list of tests
+            try {
+                localStorage.setItem(key, JSON.stringify(testData));
+                localStorage.setItem('ybt_saved_tests', JSON.stringify(savedTests));
+                alert('Daten erfolgreich gespeichert!');
+            } catch (e) {
+                alert('Fehler beim Speichern der Daten: ' + e.message);
+            }
+        }
+        
+        // Load saved test data
+        function loadData() {
+            // Get the list of saved tests
+            const savedTests = JSON.parse(localStorage.getItem('ybt_saved_tests') || '[]');
+            
+            if (savedTests.length === 0) {
+                alert('Keine gespeicherten Tests gefunden.');
+                return;
+            }
+            
+            // Create a simple selection UI
+            let selection = '';
+            savedTests.sort((a, b) => b.timestamp - a.timestamp); // Sort newest first
+            
+            for (let i = 0; i < savedTests.length; i++) {
+                const test = savedTests[i];
+                if (i < 10) { // Limit to 10 most recent tests
+                    selection += `${i+1}: ${test.patient} (${test.date})\n`;
+                }
+            }
+            
+            const selectedIndex = prompt(`Wähle einen gespeicherten Test (1-${Math.min(10, savedTests.length)}):\n${selection}`);
+            
+            if (selectedIndex === null || selectedIndex === '') {
+                return; // User cancelled
+            }
+            
+            const index = parseInt(selectedIndex) - 1;
+            if (isNaN(index) || index < 0 || index >= savedTests.length) {
+                alert('Ungültige Auswahl.');
+                return;
+            }
+            
+            // Load the selected test data
+            const testKey = savedTests[index].key;
+            const testData = JSON.parse(localStorage.getItem(testKey));
+            
+            if (!testData) {
+                alert('Testdaten nicht gefunden.');
+                return;
+            }
+            
+            // Fill the form with the loaded data
+            document.getElementById('patient').value = testData.patient || '';
+            
+            // Handle therapist selection
+            const therapistSelect = document.getElementById('therapist');
+            const therapistOptions = Array.from(therapistSelect.options).map(opt => opt.value);
+            
+            if (therapistOptions.includes(testData.therapist)) {
+                therapistSelect.value = testData.therapist;
+                document.getElementById('custom-therapist').style.display = 'none';
+            } else if (testData.therapist) {
+                therapistSelect.value = 'Custom';
+                document.getElementById('custom-therapist').style.display = 'block';
+                document.getElementById('custom-therapist').value = testData.therapist;
+            }
+            
+            document.getElementById('date').value = testData.date || '';
+            document.getElementById('right-limb-length').value = testData.rightLimbLength || '';
+            document.getElementById('left-limb-length').value = testData.leftLimbLength || '';
+            document.getElementById('right-anterior').value = testData.rightAnterior || '';
+            document.getElementById('right-posteromedial').value = testData.rightPosteromedial || '';
+            document.getElementById('right-posterolateral').value = testData.rightPosterolateral || '';
+            document.getElementById('left-anterior').value = testData.leftAnterior || '';
+            document.getElementById('left-posteromedial').value = testData.leftPosteromedial || '';
+            document.getElementById('left-posterolateral').value = testData.leftPosterolateral || '';
+            
+            // Recalculate scores
+            calculateCompositeScore();
+            
+            alert('Daten erfolgreich geladen!');
+        }
+    </script>
+</body>
+</html>
